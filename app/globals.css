@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary-900: #102E50;
+  --color-accent-500: #F5C45E;
+  --color-accent-400: #E78B48;
+  --color-warn-600: #BE3D2A;
+  
+  --color-primary-rgb: 16,46,80;
+  --color-accent-rgb: 245,196,94;
+  --color-accent2-rgb: 231,139,72;
+  --color-warn-rgb: 190,61,42;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-playfair), serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-900 text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors;
+  }
+  
+  .btn-accent {
+    @apply bg-accent-500 text-brand-900 px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors font-medium;
+  }
+  
+  .product-card {
+    @apply bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow;
+  }
+}

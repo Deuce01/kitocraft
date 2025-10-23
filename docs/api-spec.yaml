@@ -1,0 +1,206 @@
+openapi: 3.0.3
+info:
+  title: KitoCraft Jewellery API
+  description: E-commerce API for Kenyan jewellery store with M-Pesa integration
+  version: 1.0.0
+  contact:
+    name: KitoCraft Support
+    email: support@kitocraft.co.ke
+
+servers:
+  - url: https://kitocraft.vercel.app/api/v1
+    description: Production server
+  - url: http://localhost:3000/api/v1
+    description: Development server
+
+paths:
+  /products:
+    get:
+      summary: List products
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: q
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: priceMin
+          in: query
+          schema:
+            type: number
+        - name: priceMax
+          in: query
+          schema:
+            type: number
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 12
+      responses:
+        '200':
+          description: Products list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /products/{id}:
+    get:
+      summary: Get product details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetail'
+
+  /checkout:
+    post:
+      summary: Create checkout session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      variantId:
+                        type: string
+                      quantity:
+                        type: integer
+                shippingAddress:
+                  $ref: '#/components/schemas/Address'
+      responses:
+        '201':
+          description: Checkout created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderId:
+                    type: string
+                  total:
+                    type: number
+
+  /payments/daraja/initiate:
+    post:
+      summary: Initiate M-Pesa STK Push
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderId:
+                  type: string
+                phoneNumber:
+                  type: string
+                  pattern: '^254[0-9]{9}$'
+                amount:
+                  type: number
+      responses:
+        '200':
+          description: STK Push initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  checkoutRequestId:
+                    type: string
+                  paymentId:
+                    type: string
+
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        sku:
+          type: string
+        title:
+          type: string
+        price:
+          type: number
+        images:
+          type: array
+          items:
+            type: string
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+
+    Variant:
+      type: object
+      properties:
+        id:
+          type: string
+        sku:
+          type: string
+        attributes:
+          type: object
+        inventoryCount:
+          type: integer
+        priceDelta:
+          type: number
+
+    Address:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        line1:
+          type: string
+        city:
+          type: string
+        county:
+          type: string
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer

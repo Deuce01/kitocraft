@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  phone     String?
+  role      String   @default("CUSTOMER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  orders    Order[]
+  addresses Address[]
+  
+  @@map("users")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  sku         String   @unique
+  title       String
+  description String?
+  shortDesc   String?
+  price       Decimal
+  listPrice   Decimal?
+  isActive    Boolean  @default(true)
+  images      String   // JSON string for array
+  videos      String?  // JSON string for array
+  seoTitle    String?
+  seoDesc     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  variants   Variant[]
+  categories ProductCategory[]
+  
+  @@map("products")
+}
+
+model Variant {
+  id            String  @id @default(cuid())
+  productId     String
+  sku           String  @unique
+  attributes    String  // JSON string
+  priceDelta    Decimal @default(0)
+  inventoryCount Int    @default(0)
+  
+  product       Product @relation(fields: [productId], references: [id])
+  orderItems    OrderItem[]
+  inventoryLogs InventoryLog[]
+  
+  @@map("variants")
+}
+
+model Category {
+  id       String @id @default(cuid())
+  name     String
+  slug     String @unique
+  parentId String?
+  
+  parent   Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+  products ProductCategory[]
+  
+  @@map("categories")
+}
+
+model ProductCategory {
+  productId  String
+  categoryId String
+  
+  product  Product  @relation(fields: [productId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+  
+  @@id([productId, categoryId])
+  @@map("product_categories")
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  userId          String?
+  status          String   @default("PENDING")
+  total           Decimal
+  shippingAddress String   // JSON string
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user     User?       @relation(fields: [userId], references: [id])
+  items    OrderItem[]
+  payments Payment[]
+  
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  variantId String
+  quantity  Int
+  price     Decimal
+  
+  order   Order   @relation(fields: [orderId], references: [id])
+  variant Variant @relation(fields: [variantId], references: [id])
+  
+  @@map("order_items")
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  orderId       String
+  gateway       String
+  status        String   @default("PENDING")
+  amount        Decimal
+  externalTxnId String?
+  createdAt     DateTime @default(now())
+  
+  order Order @relation(fields: [orderId], references: [id])
+  
+  @@map("payments")
+}
+
+model Address {
+  id      String @id @default(cuid())
+  userId  String
+  name    String
+  phone   String
+  line1   String
+  line2   String?
+  city    String
+  county  String
+  country String @default("KE")
+  
+  user User @relation(fields: [userId], references: [id])
+  
+  @@map("addresses")
+}
+
+model InventoryLog {
+  id        String   @id @default(cuid())
+  variantId String
+  change    Int
+  reason    String
+  source    String
+  createdAt DateTime @default(now())
+  
+  variant Variant @relation(fields: [variantId], references: [id])
+  
+  @@map("inventory_logs")
+}
+
+// Enums converted to string constants for SQLite compatibility
+// Role: CUSTOMER, ADMIN, STAFF
+// OrderStatus: PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED, RETURNED
+// PaymentStatus: PENDING, SUCCESS, FAILED, CANCELLED
+// PaymentGateway: DARAJA, PESAPAL, FLUTTERWAVE
