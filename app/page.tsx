@@ -8,10 +8,10 @@ export default function HomePage() {
       <section className="relative h-96 bg-gradient-to-r from-brand-900 to-brand-900/80 flex items-center">
         <div className="container mx-auto px-4 text-white">
           <h1 className="font-serif text-5xl font-bold mb-4">
-            Exquisite Kenyan Jewellery
+            Innovative 3D Printed Products
           </h1>
           <p className="text-xl mb-8 max-w-2xl">
-            Discover handcrafted pieces that tell stories of heritage, beauty, and craftsmanship.
+            Discover cutting-edge 3D printed items crafted with precision technology and creative design.
           </p>
           <Link href="/products" className="btn-accent">
             Shop Collections
@@ -27,9 +27,9 @@ export default function HomePage() {
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: 'Gold Rings', image: '/api/placeholder/400/300', count: '24 pieces' },
-              { name: 'Silver Necklaces', image: '/api/placeholder/400/300', count: '18 pieces' },
-              { name: 'Gemstone Earrings', image: '/api/placeholder/400/300', count: '32 pieces' },
+              { name: 'Miniatures & Figurines', image: '/api/placeholder/400/300', count: '24 pieces' },
+              { name: 'Home Decor', image: '/api/placeholder/400/300', count: '18 pieces' },
+              { name: 'Custom Parts', image: '/api/placeholder/400/300', count: '32 pieces' },
             ].map((collection) => (
               <div key={collection.name} className="product-card">
                 <div className="h-48 bg-gray-200 relative">

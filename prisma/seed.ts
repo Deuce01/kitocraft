@@ -6,52 +6,52 @@ async function main() {
   // Create categories
   const categories = await Promise.all([
     prisma.category.create({
-      data: { name: 'Rings', slug: 'rings' }
+      data: { name: 'Miniatures & Figurines', slug: 'miniatures-figurines' }
     }),
     prisma.category.create({
-      data: { name: 'Necklaces', slug: 'necklaces' }
+      data: { name: 'Home Decor', slug: 'home-decor' }
     }),
     prisma.category.create({
-      data: { name: 'Earrings', slug: 'earrings' }
+      data: { name: 'Custom Parts', slug: 'custom-parts' }
     }),
     prisma.category.create({
-      data: { name: 'Bracelets', slug: 'bracelets' }
+      data: { name: 'Prototypes', slug: 'prototypes' }
     })
   ])
 
   // Create sample products
   const products = [
     {
-      sku: 'GR001',
-      title: 'Gold Diamond Ring',
-      description: 'Beautiful 18k gold ring with diamond setting',
-      price: 45000,
-      listPrice: 50000,
-      images: JSON.stringify(['/images/gold-ring-1.jpg', '/images/gold-ring-2.jpg']),
+      sku: 'MF001',
+      title: 'Dragon Miniature Figure',
+      description: 'Detailed 3D printed dragon miniature for gaming and display',
+      price: 1500,
+      listPrice: 2000,
+      images: JSON.stringify(['/images/dragon-miniature-1.jpg', '/images/dragon-miniature-2.jpg']),
       categoryId: categories[0].id
     },
     {
-      sku: 'SN001', 
-      title: 'Silver Pearl Necklace',
-      description: 'Elegant silver necklace with freshwater pearls',
-      price: 15000,
-      images: JSON.stringify(['/images/silver-necklace-1.jpg']),
+      sku: 'HD001', 
+      title: 'Modern Vase Design',
+      description: 'Contemporary 3D printed vase with geometric patterns',
+      price: 3500,
+      images: JSON.stringify(['/images/modern-vase-1.jpg']),
       categoryId: categories[1].id
     },
     {
-      sku: 'GE001',
-      title: 'Gold Stud Earrings',
-      description: 'Classic gold stud earrings with cubic zirconia',
-      price: 8500,
-      images: JSON.stringify(['/images/gold-earrings-1.jpg']),
+      sku: 'CP001',
+      title: 'Custom Phone Stand',
+      description: 'Personalized 3D printed phone stand with custom engraving',
+      price: 800,
+      images: JSON.stringify(['/images/phone-stand-1.jpg']),
       categoryId: categories[2].id
     },
     {
-      sku: 'SB001',
-      title: 'Silver Chain Bracelet',
-      description: 'Delicate silver chain bracelet with charm',
-      price: 6500,
-      images: JSON.stringify(['/images/silver-bracelet-1.jpg']),
+      sku: 'PR001',
+      title: 'Product Prototype Model',
+      description: 'High-precision 3D printed prototype for product development',
+      price: 5000,
+      images: JSON.stringify(['/images/prototype-1.jpg']),
       categoryId: categories[3].id
     }
   ]
@@ -76,7 +76,7 @@ async function main() {
       data: {
         productId: product.id,
         sku: `${product.sku}-DEFAULT`,
-        attributes: JSON.stringify({ size: 'Standard', material: 'Default' }),
+        attributes: JSON.stringify({ size: 'Standard', material: 'PLA', color: 'White' }),
         priceDelta: 0,
         inventoryCount: Math.floor(Math.random() * 20) + 5
       }
