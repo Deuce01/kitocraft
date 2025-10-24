@@ -1,32 +1,68 @@
-import { prisma } from '@/lib/prisma'
+'use client'
 
-async function getOrders() {
-  return prisma.order.findMany({
-    include: {
-      user: {
-        select: { name: true, email: true }
-      },
-      items: {
-        include: {
-          variant: {
-            include: {
-              product: {
-                select: { title: true }
-              }
-            }
-          }
-        }
-      },
-      payments: {
-        select: { gateway: true, status: true }
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  })
+import { useState, useEffect } from 'react'
+
+interface Order {
+  id: string
+  status: string
+  total: number
+  createdAt: string
+  shippingAddress: string
+  user?: { name: string; email: string }
+  items: Array<{
+    variant: {
+      product: { title: string }
+    }
+  }>
+  payments: Array<{
+    gateway: string
+    status: string
+  }>
 }
 
-export default async function AdminOrdersPage() {
-  const orders = await getOrders()
+export default function AdminOrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchOrders()
+  }, [])
+
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('/api/admin/orders')
+      if (response.ok) {
+        const data = await response.json()
+        setOrders(data)
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updateOrderStatus = async (orderId: string, status: string) => {
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      })
+
+      if (response.ok) {
+        setOrders(prev => prev.map(order => 
+          order.id === orderId ? { ...order, status } : order
+        ))
+      }
+    } catch (error) {
+      console.error('Error updating order:', error)
+    }
+  }
+
+  if (loading) {
+    return <div className="flex justify-center py-12">Loading...</div>
+  }
 
   return (
     <div>
@@ -73,15 +109,17 @@ export default async function AdminOrdersPage() {
                     KES {Number(order.total).toLocaleString()}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      order.status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
-                      order.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800' :
-                      order.status === 'SHIPPED' ? 'bg-purple-100 text-purple-800' :
-                      order.status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {order.status}
-                    </span>
+                    <select
+                      value={order.status}
+                      onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                      className="text-xs rounded border-gray-300 focus:ring-brand-500 focus:border-brand-500"
+                    >
+                      <option value="PENDING">PENDING</option>
+                      <option value="PROCESSING">PROCESSING</option>
+                      <option value="SHIPPED">SHIPPED</option>
+                      <option value="DELIVERED">DELIVERED</option>
+                      <option value="CANCELLED">CANCELLED</option>
+                    </select>
                   </td>
                   <td className="px-6 py-4 text-sm">
                     {order.payments[0] ? (
