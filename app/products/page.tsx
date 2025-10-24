@@ -3,16 +3,17 @@ import ProductGrid from '@/components/ProductGrid'
 import SearchFilters from '@/components/SearchFilters'
 
 interface ProductsPageProps {
-  searchParams: {
+  searchParams: Promise<{
     category?: string
     q?: string
     priceMin?: string
     priceMax?: string
     page?: string
-  }
+  }>
 }
 
-export default function ProductsPage({ searchParams }: ProductsPageProps) {
+export default async function ProductsPage({ searchParams }: ProductsPageProps) {
+  const params = await searchParams
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col lg:flex-row gap-8">
@@ -25,8 +26,8 @@ export default function ProductsPage({ searchParams }: ProductsPageProps) {
         <main className="lg:w-3/4">
           <div className="flex justify-between items-center mb-6">
             <h1 className="font-serif text-3xl font-bold">
-              {searchParams.category ? 
-                `${searchParams.category.replace('-', ' ')} Collection` : 
+              {params.category ? 
+                `${params.category.replace('-', ' ')} Collection` : 
                 'All Products'
               }
             </h1>
@@ -39,7 +40,7 @@ export default function ProductsPage({ searchParams }: ProductsPageProps) {
           </div>
 
           <Suspense fallback={<ProductGridSkeleton />}>
-            <ProductGrid searchParams={searchParams} />
+            <ProductGrid searchParams={params} />
           </Suspense>
         </main>
       </div>
