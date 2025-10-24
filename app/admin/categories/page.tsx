@@ -1,20 +1,41 @@
-import { prisma } from '@/lib/prisma'
+'use client'
 
-async function getCategories() {
-  return prisma.category.findMany({
-    include: {
-      _count: {
-        select: {
-          products: true
-        }
-      }
-    },
-    orderBy: { name: 'asc' }
-  })
+import { useState, useEffect } from 'react'
+
+interface Category {
+  id: string
+  name: string
+  slug: string
+  _count: {
+    products: number
+  }
 }
 
-export default async function AdminCategoriesPage() {
-  const categories = await getCategories()
+export default function AdminCategoriesPage() {
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchCategories()
+  }, [])
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('/api/admin/categories')
+      if (response.ok) {
+        const data = await response.json()
+        setCategories(data)
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return <div className="flex justify-center py-12">Loading...</div>
+  }
 
   return (
     <div>

@@ -1,27 +1,49 @@
-import { prisma } from '@/lib/prisma'
+'use client'
 
-async function getUsers() {
-  return prisma.user.findMany({
-    include: {
-      orders: {
-        select: {
-          id: true,
-          total: true,
-          status: true
-        }
-      },
-      _count: {
-        select: {
-          orders: true
-        }
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  })
+import { useState, useEffect } from 'react'
+
+interface User {
+  id: string
+  name: string | null
+  email: string
+  phone: string | null
+  role: string
+  createdAt: string
+  orders: Array<{
+    id: string
+    total: number
+    status: string
+  }>
+  _count: {
+    orders: number
+  }
 }
 
-export default async function AdminUsersPage() {
-  const users = await getUsers()
+export default function AdminUsersPage() {
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchUsers()
+  }, [])
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/api/admin/users')
+      if (response.ok) {
+        const data = await response.json()
+        setUsers(data)
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return <div className="flex justify-center py-12">Loading...</div>
+  }
 
   return (
     <div>
