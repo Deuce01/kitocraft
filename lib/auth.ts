@@ -46,7 +46,7 @@ export function verifyToken(token: string): User | null {
 export async function createUser(email: string, password: string, name?: string, phone?: string) {
   const hashedPassword = await hashPassword(password)
   
-  return prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       email,
       name,
@@ -54,18 +54,22 @@ export async function createUser(email: string, password: string, name?: string,
       role: 'CUSTOMER'
     }
   })
+  
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name || undefined,
+    phone: user.phone || undefined,
+    role: user.role
+  }
 }
 
 export async function authenticateUser(email: string, password: string): Promise<User | null> {
-  // For demo purposes, we'll create a simple auth without password field in schema
-  // In production, add password field to User model
-  
   const user = await prisma.user.findUnique({
     where: { email }
   })
   
   if (!user) {
-    // Create user if doesn't exist (demo mode)
     const newUser = await prisma.user.create({
       data: {
         email,
@@ -73,10 +77,22 @@ export async function authenticateUser(email: string, password: string): Promise
         role: 'CUSTOMER'
       }
     })
-    return newUser
+    return {
+      id: newUser.id,
+      email: newUser.email,
+      name: newUser.name || undefined,
+      phone: newUser.phone || undefined,
+      role: newUser.role
+    }
   }
   
-  return user
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name || undefined,
+    phone: user.phone || undefined,
+    role: user.role
+  }
 }
 
 export async function getCurrentUser(token?: string): Promise<User | null> {
@@ -89,5 +105,13 @@ export async function getCurrentUser(token?: string): Promise<User | null> {
     where: { id: decoded.id }
   })
   
-  return user
+  if (!user) return null
+  
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name || undefined,
+    phone: user.phone || undefined,
+    role: user.role
+  }
 }
