@@ -18,7 +18,8 @@ interface Product {
   }>
 }
 
-export default function EditProductPage({ params }: { params: { id: string } }) {
+export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const [productId, setProductId] = useState<string>('')
   const router = useRouter()
   const [product, setProduct] = useState<Product | null>(null)
   const [formData, setFormData] = useState({
@@ -35,12 +36,15 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
-    fetchProduct()
-  }, [params.id])
+    params.then(p => {
+      setProductId(p.id)
+      fetchProduct(p.id)
+    })
+  }, [])
 
-  const fetchProduct = async () => {
+  const fetchProduct = async (id: string) => {
     try {
-      const response = await fetch(`/api/admin/products/${params.id}`)
+      const response = await fetch(`/api/admin/products/${id}`)
       if (response.ok) {
         const data = await response.json()
         setProduct(data)
@@ -68,7 +72,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     setIsSubmitting(true)
 
     try {
-      const response = await fetch(`/api/admin/products/${params.id}`, {
+      const response = await fetch(`/api/admin/products/${productId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -100,7 +104,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     }
 
     try {
-      const response = await fetch(`/api/admin/products/${params.id}`, {
+      const response = await fetch(`/api/admin/products/${productId}`, {
         method: 'DELETE'
       })
 
