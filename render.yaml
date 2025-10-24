@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: kitocraft
+    env: node
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kitocraft-db
+          property: connectionString
+databases:
+  - name: kitocraft-db
+    databaseName: kitocraft
+    user: kitocraft
