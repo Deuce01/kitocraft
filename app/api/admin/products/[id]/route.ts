@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   try {
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         variants: {
           select: {
@@ -26,7 +27,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   try {
     const { sku, title, description, price, listPrice, images, inventoryCount, isActive } = await request.json()
 
@@ -38,7 +40,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const existingProduct = await prisma.product.findFirst({
       where: { 
         sku,
-        NOT: { id: params.id }
+        NOT: { id }
       }
     })
 
@@ -48,7 +50,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Update product
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         sku,
         title,
@@ -62,7 +64,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Update variant inventory
     await prisma.variant.updateMany({
-      where: { productId: params.id },
+      where: { productId: id },
       data: { inventoryCount }
     })
 
@@ -73,16 +75,17 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   try {
     // Delete variants first (foreign key constraint)
     await prisma.variant.deleteMany({
-      where: { productId: params.id }
+      where: { productId: id }
     })
 
     // Delete product
     await prisma.product.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({ success: true })
